@@ -11,6 +11,7 @@ This module takes the following steps to give you a fulll on-prem builder test s
 1. Builds the infrastructure required to host a hab bldr server
     - Networking setup for a vm, (nic, public IP, NSG, etc)
     - VM with two disks (a secondary one for the /hab partition)
+    - **NOTE:** This does not create the resource group, you have to point it at an existing repo group for this to work!
 2. Ensures that SELinux is disabled on the system
 3. Configures the second disk and mounts it to the /hab partition
 4. Gets LetsEncrypt SSL certs to setup builder with SSL instead of using port 80

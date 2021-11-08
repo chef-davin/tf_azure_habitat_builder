@@ -22,13 +22,14 @@ check_status() {
 }
 
 export PGPASSWORD=$(sudo cat /hab/svc/builder-datastore/config/pwfile)
-if [[ ! $(/hab/pkgs/core/postgresql/*/*/bin/psql -h 127.0.0.1 -p 5432 -U hab -d builder -c "select token from account_tokens;" | grep "yamhqaElPNQ==") ]]; then
+if [[ ! $(/hab/pkgs/core/postgresql/*/*/bin/psql -h 127.0.0.1 -p 5432 -U hab -d builder -c "select token from account_tokens;" | grep "UFDWGp2ag==") ]]; then
   echo "Loading Database Data"
 
   # Stop builder-api service
   hab svc stop habitat/builder-api
   check_status
 
+  # Clear out 
   # Load builder data so we can auto-load the core origin
   export PGPASSWORD=$(sudo cat /hab/svc/builder-datastore/config/pwfile)
   /hab/pkgs/core/postgresql/*/*/bin/psql -h 127.0.0.1 -p 5432 -U hab -d postgres -c 'DROP DATABASE builder;'

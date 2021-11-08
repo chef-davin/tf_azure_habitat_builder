@@ -5,7 +5,7 @@ resource "null_resource" "restore_database" {
   count = var.restore_database ? 1 : 0
 
   provisioner "file" {
-    source      = "${path.module}/scripts/load-builder.sql"
+    source      = "${path.module}/data/load-builder.sql"
     destination = "/tmp/load-builder.sql"
     connection {
       host        = azurerm_linux_virtual_machine.builder_server.public_ip_address

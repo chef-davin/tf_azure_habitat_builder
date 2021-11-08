@@ -80,6 +80,7 @@ if [[ ! $(hab svc status | grep "/builder-api/" | awk '{print $4}' | grep "up") 
   echo "Installing Hab Builder"
   export HAB_LICENSE="accept"
   /tmp/on-prem-builder/install.sh
+  check_status
   echo "Hab Builder Install Completed"
 
   # Restart Hab-Sup

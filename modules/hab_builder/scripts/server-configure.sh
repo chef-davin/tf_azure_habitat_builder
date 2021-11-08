@@ -29,6 +29,8 @@ if [[ ! $(mount | grep /hab) ]]; then
   echo -e "/dev/mapper/vg_data-lv_hab\t/hab\txfs\tdefaults\t0 0" >> /etc/fstab
   mount /hab
   check_status
+  mkdir -p /hab/cache/keys
+  check_status
 else
   echo "No mounting required"
 fi

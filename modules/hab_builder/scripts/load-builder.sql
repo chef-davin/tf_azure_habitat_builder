@@ -8,36 +8,176 @@
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'SQL_ASCII';
+SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET row_security = off;
 
+ALTER TABLE IF EXISTS ONLY public.origin_secrets DROP CONSTRAINT IF EXISTS origin_secrets_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_secret_keys DROP CONSTRAINT IF EXISTS origin_secret_keys_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_public_keys DROP CONSTRAINT IF EXISTS origin_public_keys_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_public_encryption_keys DROP CONSTRAINT IF EXISTS origin_public_encryption_keys_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_projects DROP CONSTRAINT IF EXISTS origin_projects_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_project_integrations DROP CONSTRAINT IF EXISTS origin_project_integrations_project_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_project_integrations DROP CONSTRAINT IF EXISTS origin_project_integrations_integration_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_private_encryption_keys DROP CONSTRAINT IF EXISTS origin_private_encryption_keys_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_packages DROP CONSTRAINT IF EXISTS origin_packages_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_members DROP CONSTRAINT IF EXISTS origin_members_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_invitations DROP CONSTRAINT IF EXISTS origin_invitations_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_channels DROP CONSTRAINT IF EXISTS origin_channels_origin_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_channel_packages DROP CONSTRAINT IF EXISTS origin_channel_packages_package_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.origin_channel_packages DROP CONSTRAINT IF EXISTS origin_channel_packages_channel_id_fkey;
+DROP TRIGGER IF EXISTS set_updated_at ON public.job_graph;
+DROP TRIGGER IF EXISTS origin_packages_vector ON public.origin_packages;
+DROP RULE IF EXISTS "_RETURN" ON public.origins_with_stats;
+DROP INDEX IF EXISTS public.state;
+DROP INDEX IF EXISTS public.origin_packages_origin_name_target_index;
+DROP INDEX IF EXISTS public.origin_packages_ident_array_index;
+DROP INDEX IF EXISTS public.origin_channel_packages_packages_index;
+DROP INDEX IF EXISTS public.job_graph_dependencies_idx;
+DROP INDEX IF EXISTS public.ident_index;
+ALTER TABLE IF EXISTS ONLY public.origins DROP CONSTRAINT IF EXISTS origins_pkey;
+ALTER TABLE IF EXISTS ONLY public.origins DROP CONSTRAINT IF EXISTS origins_name_key;
+ALTER TABLE IF EXISTS ONLY public.origin_secrets DROP CONSTRAINT IF EXISTS origin_secrets_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_secret_keys DROP CONSTRAINT IF EXISTS origin_secret_keys_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_secret_keys DROP CONSTRAINT IF EXISTS origin_secret_keys_full_name_key;
+ALTER TABLE IF EXISTS ONLY public.origin_public_keys DROP CONSTRAINT IF EXISTS origin_public_keys_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_public_keys DROP CONSTRAINT IF EXISTS origin_public_keys_full_name_key;
+ALTER TABLE IF EXISTS ONLY public.origin_public_encryption_keys DROP CONSTRAINT IF EXISTS origin_public_encryption_keys_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_public_encryption_keys DROP CONSTRAINT IF EXISTS origin_public_encryption_keys_full_name_key;
+ALTER TABLE IF EXISTS ONLY public.origin_projects DROP CONSTRAINT IF EXISTS origin_projects_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_projects DROP CONSTRAINT IF EXISTS origin_projects_origin_package_name_name_target_key;
+ALTER TABLE IF EXISTS ONLY public.origin_project_integrations DROP CONSTRAINT IF EXISTS origin_project_integrations_project_id_integration_id_key;
+ALTER TABLE IF EXISTS ONLY public.origin_project_integrations DROP CONSTRAINT IF EXISTS origin_project_integrations_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_private_encryption_keys DROP CONSTRAINT IF EXISTS origin_private_encryption_keys_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_private_encryption_keys DROP CONSTRAINT IF EXISTS origin_private_encryption_keys_full_name_key;
+ALTER TABLE IF EXISTS ONLY public.origin_packages DROP CONSTRAINT IF EXISTS origin_packages_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_packages DROP CONSTRAINT IF EXISTS origin_packages_ident_target_key;
+ALTER TABLE IF EXISTS ONLY public.origin_package_settings DROP CONSTRAINT IF EXISTS origin_package_settings_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_package_settings DROP CONSTRAINT IF EXISTS origin_package_settings_origin_name_key;
+ALTER TABLE IF EXISTS ONLY public.origin_members DROP CONSTRAINT IF EXISTS origin_members_origin_account_id_key;
+ALTER TABLE IF EXISTS ONLY public.origin_invitations DROP CONSTRAINT IF EXISTS origin_invitations_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_invitations DROP CONSTRAINT IF EXISTS origin_invitations_origin_account_id_key;
+ALTER TABLE IF EXISTS ONLY public.origin_integrations DROP CONSTRAINT IF EXISTS origin_integrations_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_integrations DROP CONSTRAINT IF EXISTS origin_integrations_origin_integration_name_key;
+ALTER TABLE IF EXISTS ONLY public.origin_channels DROP CONSTRAINT IF EXISTS origin_channels_pkey;
+ALTER TABLE IF EXISTS ONLY public.origin_channels DROP CONSTRAINT IF EXISTS origin_channels_origin_name_key;
+ALTER TABLE IF EXISTS ONLY public.origin_channel_packages DROP CONSTRAINT IF EXISTS origin_channel_packages_pkey;
+ALTER TABLE IF EXISTS ONLY public.job_graph DROP CONSTRAINT IF EXISTS job_graph_pkey;
+ALTER TABLE IF EXISTS ONLY public.audit_origin DROP CONSTRAINT IF EXISTS audit_origin_pkey;
+ALTER TABLE IF EXISTS ONLY public.accounts DROP CONSTRAINT IF EXISTS accounts_pkey;
+ALTER TABLE IF EXISTS ONLY public.accounts DROP CONSTRAINT IF EXISTS accounts_name_key;
+ALTER TABLE IF EXISTS ONLY public.account_tokens DROP CONSTRAINT IF EXISTS account_tokens_token_key;
+ALTER TABLE IF EXISTS ONLY public.account_tokens DROP CONSTRAINT IF EXISTS account_tokens_pkey;
+ALTER TABLE IF EXISTS ONLY public.account_tokens DROP CONSTRAINT IF EXISTS account_tokens_account_id_key;
+ALTER TABLE IF EXISTS ONLY public.__diesel_schema_migrations DROP CONSTRAINT IF EXISTS __diesel_schema_migrations_pkey;
+DROP VIEW IF EXISTS public.packages_with_channel_platform;
+DROP TABLE IF EXISTS public.origins_with_stats;
+DROP VIEW IF EXISTS public.origins_with_secret_key;
+DROP TABLE IF EXISTS public.origins;
+DROP TABLE IF EXISTS public.origin_secrets;
+DROP SEQUENCE IF EXISTS public.origin_secrets_id_seq;
+DROP TABLE IF EXISTS public.origin_secret_keys;
+DROP SEQUENCE IF EXISTS public.origin_secret_key_id_seq;
+DROP TABLE IF EXISTS public.origin_public_keys;
+DROP TABLE IF EXISTS public.origin_public_encryption_keys;
+DROP SEQUENCE IF EXISTS public.origin_public_key_id_seq;
+DROP SEQUENCE IF EXISTS public.origin_public_encryption_key_id_seq;
+DROP TABLE IF EXISTS public.origin_projects;
+DROP TABLE IF EXISTS public.origin_project_integrations;
+DROP SEQUENCE IF EXISTS public.origin_project_integration_id_seq;
+DROP SEQUENCE IF EXISTS public.origin_project_id_seq;
+DROP TABLE IF EXISTS public.origin_private_encryption_keys;
+DROP SEQUENCE IF EXISTS public.origin_private_encryption_key_id_seq;
+DROP VIEW IF EXISTS public.origin_packages_with_version_array;
+DROP VIEW IF EXISTS public.origin_package_versions;
+DROP TABLE IF EXISTS public.origin_package_settings;
+DROP SEQUENCE IF EXISTS public.origin_package_settings_id_seq;
+DROP TABLE IF EXISTS public.origin_members;
+DROP TABLE IF EXISTS public.origin_invitations;
+DROP SEQUENCE IF EXISTS public.origin_invitations_id_seq;
+DROP TABLE IF EXISTS public.origin_integrations;
+DROP SEQUENCE IF EXISTS public.origin_integration_id_seq;
+DROP SEQUENCE IF EXISTS public.origin_id_seq;
+DROP TABLE IF EXISTS public.origin_channels;
+DROP TABLE IF EXISTS public.origin_channel_packages;
+DROP SEQUENCE IF EXISTS public.origin_channel_id_seq;
+DROP VIEW IF EXISTS public.job_graph_completed;
+DROP TABLE IF EXISTS public.job_graph;
+DROP SEQUENCE IF EXISTS public.job_graph_id_seq;
+DROP TABLE IF EXISTS public.audit_package_group;
+DROP TABLE IF EXISTS public.audit_package;
+DROP TABLE IF EXISTS public.audit_origin;
+DROP SEQUENCE IF EXISTS public.audit_origin_id_seq;
+DROP TABLE IF EXISTS public.accounts;
+DROP SEQUENCE IF EXISTS public.accounts_id_seq;
+DROP TABLE IF EXISTS public.account_tokens;
+DROP SEQUENCE IF EXISTS public.account_tokens_id_seq;
+DROP TABLE IF EXISTS public.__diesel_schema_migrations;
+DROP FUNCTION IF EXISTS public.update_origin_package_vector_index();
+DROP FUNCTION IF EXISTS public.t_rdeps_for_id(job_graph_id bigint);
+DROP FUNCTION IF EXISTS public.t_deps_for_id_group(in_id bigint, in_group_id bigint);
+DROP FUNCTION IF EXISTS public.t_deps_for_id(job_graph_id bigint);
+DROP FUNCTION IF EXISTS public.job_graph_mark_failed(job_graph_id bigint);
+DROP FUNCTION IF EXISTS public.job_graph_mark_complete(job_graph_id bigint, as_built text);
+DROP FUNCTION IF EXISTS public.job_graph_fixup_waiting_on_count();
+DROP FUNCTION IF EXISTS public.get_origin_package_v5(op_ident text, op_visibilities public.origin_package_visibility[]);
+DROP FUNCTION IF EXISTS public.get_all_origin_packages_for_ident_v1(op_ident text);
+DROP TABLE IF EXISTS public.origin_packages;
+DROP SEQUENCE IF EXISTS public.origin_package_id_seq;
+DROP FUNCTION IF EXISTS public.next_id_v1(sequence_id regclass, OUT result bigint);
+DROP FUNCTION IF EXISTS public.diesel_set_updated_at();
+DROP FUNCTION IF EXISTS public.diesel_manage_updated_at(_tbl regclass);
+DROP TYPE IF EXISTS public.package_channel_trigger;
+DROP TYPE IF EXISTS public.origin_package_visibility;
+DROP TYPE IF EXISTS public.origin_package_operation;
+DROP TYPE IF EXISTS public.origin_operation;
+DROP TYPE IF EXISTS public.origin_member_role;
+DROP TYPE IF EXISTS public.job_exec_state;
+DROP EXTENSION IF EXISTS intarray;
+DROP EXTENSION IF EXISTS plpgsql;
+DROP SCHEMA IF EXISTS public;
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
+-- Name: public; Type: SCHEMA; Schema: -; Owner: hab
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO hab;
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: hab
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
 --
--- Name: intarray; Type: EXTENSION; Schema: -; Owner:
+-- Name: intarray; Type: EXTENSION; Schema: -; Owner: 
 --
 
 CREATE EXTENSION IF NOT EXISTS intarray WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION intarray; Type: COMMENT; Schema: -; Owner:
+-- Name: EXTENSION intarray; Type: COMMENT; Schema: -; Owner: 
 --
 
 COMMENT ON EXTENSION intarray IS 'functions, operators, and index support for 1-D arrays of integers';
@@ -1253,7 +1393,7 @@ COPY public.__diesel_schema_migrations (version, run_on) FROM stdin;
 --
 
 COPY public.account_tokens (id, account_id, token, created_at) FROM stdin;
-1903954122277658624	1903950252151414784	_Qk9YLTEKYmxkci0yMDIxMTEwNzAxNDUxOQpibGRyLTIwMjExMTA3MDE0NTE5ClJIUzNMMlI5OU90L2dydG9YV1dvTkd0K2IwY2szME9JCmZ2Q1REY0VUbUN5L1VESzZiS3FiSnJuOTBJVzFTSGVLNWY0K3IxSG9JanAwM2FXVw==	2021-11-06 21:46:49.2527+00
+1903954122277658624	1903950252151414784	_Qk9YLTEKYmxkci0yMDIxMTEwODE1MzI0MwpibGRyLTIwMjExMTA4MTUzMjQzCnkrdHNjUzhtUHNMNlNhYjBkTDZETWFoSUFHc3BEbFJnCnFTOWlkUVQ2dmlQRk4xa3B4Qk1LU0crbnFpNnJ6Y1BibkxHeHJJNHNyamhqaElPNQ==	2021-11-06 21:46:49.2527+00
 \.
 
 
@@ -1261,7 +1401,7 @@ COPY public.account_tokens (id, account_id, token, created_at) FROM stdin;
 -- Name: account_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hab
 --
 
-SELECT pg_catalog.setval('public.account_tokens_id_seq', 1, true);
+SELECT pg_catalog.setval('public.account_tokens_id_seq', 3, true);
 
 
 --
@@ -1277,7 +1417,7 @@ COPY public.accounts (id, name, email, created_at, updated_at) FROM stdin;
 -- Name: accounts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hab
 --
 
-SELECT pg_catalog.setval('public.accounts_id_seq', 1, true);
+SELECT pg_catalog.setval('public.accounts_id_seq', 2, true);
 
 
 --
@@ -1285,9 +1425,9 @@ SELECT pg_catalog.setval('public.accounts_id_seq', 1, true);
 --
 
 COPY public.audit_origin (id, operation, target_object, origin, requester_id, requester_name, created_at) FROM stdin;
-1903950513095843840	origin_create core  core	1903950252151414784	chef-davin	2021-11-06 21:39:39.00652+00
-1904426183013974016 origin_create chef  chef  1903950252151414784 chef-davin  2021-11-07 13:24:43.279015+00
-1904426252354215936 origin_create habitat habitat  1903950252151414784  chef-davin  2021-11-07 13:24:51.545133+00
+1903950513095843840	origin_create	core	core	1903950252151414784	chef-davin	2021-11-06 21:39:39.00652+00
+1904426183013974016	origin_create	chef	chef	1903950252151414784	chef-davin	2021-11-07 13:24:43.279015+00
+1904426252354215936	origin_create	habitat	habitat	1903950252151414784	chef-davin	2021-11-07 13:24:51.545133+00
 \.
 
 
@@ -2024,5 +2164,13 @@ ALTER TABLE ONLY public.origin_secrets
 
 
 --
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: hab
+--
+
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
 -- PostgreSQL database dump complete
 --
+

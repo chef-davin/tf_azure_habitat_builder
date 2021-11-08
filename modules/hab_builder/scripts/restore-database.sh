@@ -22,12 +22,8 @@ check_status() {
 }
 
 export PGPASSWORD=$(sudo cat /hab/svc/builder-datastore/config/pwfile)
-if [[ ! $(/hab/pkgs/core/postgresql/*/*/bin/psql -h 127.0.0.1 -p 5432 -U hab -d builder -c "select token from account_tokens;" | grep "AwM2FXVw==") ]]; then
+if [[ ! $(/hab/pkgs/core/postgresql/*/*/bin/psql -h 127.0.0.1 -p 5432 -U hab -d builder -c "select token from account_tokens;" | grep "yamhqaElPNQ==") ]]; then
   echo "Loading Database Data"
-  # Setup Builder SQL Loader File
-  sed -i "s/chef-davin/${GITHUB_USER_NAME}/g" /tmp/load-builder.sql
-  sed -i "s/Davin.Taddeo@progess.com/${GITHUB_USER_EMAIL}/g" /tmp/load-builder.sql
-  check_status
 
   # Stop builder-api service
   hab svc stop habitat/builder-api
@@ -42,11 +38,15 @@ if [[ ! $(/hab/pkgs/core/postgresql/*/*/bin/psql -h 127.0.0.1 -p 5432 -U hab -d 
   /hab/pkgs/core/postgresql/*/*/bin/psql -h 127.0.0.1 -p 5432 -U hab -d builder < /tmp/load-builder.sql
   check_status
 
+  # Update User name and email to match their github credentials
+  /hab/pkgs/core/postgresql/*/*/bin/psql -h 127.0.0.1 -p 5432 -U hab -d builder -c "UPDATE accounts SET name = '${GITHUB_USER_NAME}' WHERE id = '1903950252151414784';"
+  /hab/pkgs/core/postgresql/*/*/bin/psql -h 127.0.0.1 -p 5432 -U hab -d builder -c "UPDATE accounts SET email = '${GITHUB_USER_EMAIL}' WHERE id = '1903950252151414784';"
+
   # Start builder-api service again
   hab svc start habitat/builder-api
   check_status
+
+  echo "Database data has been loaded successfully"
 else
   echo "Database data has already been loaded. Moving on"
 fi
-
-echo "Database data has been loaded successfully"

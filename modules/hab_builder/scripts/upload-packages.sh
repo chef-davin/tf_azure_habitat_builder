@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getopts "u:g:e:" opt; do
+while getopts "u:" opt; do
   case ${opt} in
     u ) PUBURL=$OPTARG
       ;;
@@ -20,8 +20,8 @@ check_status() {
 # Bulk Upload the packages to our on-prem builder
 if [[ ! $(hab pkg search --url https://${PUBURL} habitat/builder-memcached | grep builder) ]]; then
   echo "Starting Bulk Upload of Packages"
-  export HAB_AUTH_TOKEN="_Qk9YLTEKYmxkci0yMDIxMTEwNzAxNDUxOQpibGRyLTIwMjExMTA3MDE0NTE5ClJIUzNMMlI5OU90L2dydG9YV1dvTkd0K2IwY2szME9JCmZ2Q1REY0VUbUN5L1VESzZiS3FiSnJuOTBJVzFTSGVLNWY0K3IxSG9JanAwM2FXVw=="
-  hab pkg bulkupload --url https://${PUBURL} --channel stable --auto-create-origins builder_bootstrap/
+  export HAB_AUTH_TOKEN="_Qk9YLTEKYmxkci0yMDIxMTEwODE1MzI0MwpibGRyLTIwMjExMTA4MTUzMjQzCnkrdHNjUzhtUHNMNlNhYjBkTDZETWFoSUFHc3BEbFJnCnFTOWlkUVQ2dmlQRk4xa3B4Qk1LU0crbnFpNnJ6Y1BibkxHeHJJNHNyamhqaElPNQ=="
+  hab pkg bulkupload --url https://${PUBURL} --channel stable --auto-create-origins /hab/builder_bootstrap/
   check_status
 else
   echo "Bulk Upload of packages has already completed. Moving on"

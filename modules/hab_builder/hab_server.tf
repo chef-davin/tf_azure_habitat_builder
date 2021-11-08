@@ -81,7 +81,7 @@ resource "azurerm_linux_virtual_machine" "builder_server" {
 
   os_disk {
     name                 = "bldr_osdisk1"
-    disk_size_gb         = "128"
+    disk_size_gb         = "75"
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
@@ -98,12 +98,15 @@ resource "azurerm_linux_virtual_machine" "builder_server" {
 
 #Create Secondary Disk
 resource "azurerm_managed_disk" "secondary_disk" {
+  depends_on = [
+    azurerm_linux_virtual_machine.builder_server,
+  ]
   name                 = "${var.architecture_prefix}_bldr_disk2"
   location             = var.location
   resource_group_name  = var.resource_group_name
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
-  disk_size_gb         = "128"
+  disk_size_gb         = "150"
 
   tags = {
     X-Contact = var.x_contact_tag
